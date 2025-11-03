@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security+ CTF Challenge - Chapters 6 & 7</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .header h1 {
+            color: #00ff00;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .header p {
+            color: #00ffff;
+            font-size: 1.1em;
+        }
+
+        .scoreboard {
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-item .label {
+            font-size: 0.9em;
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .score-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .team-registration {
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .team-registration h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .team-registration input {
+            padding: 15px;
+            font-size: 1.2em;
+            background: #0a0e27;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            width: 300px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .team-registration button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #00ff00;
+            color: #0a0e27;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .team-registration button:hover {
+            background: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .challenge-card {
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 25px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            border-color: #00ffff;
+        }
+
+        .challenge-card.completed {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .challenge-card.completed::after {
+            content: "[SOLVED]";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00ffff;
+            color: #0a0e27;
+            padding: 5px 15px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .challenge-difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-easy {
+            background: #00ff00;
+            color: #0a0e27;
+        }
+
+        .difficulty-medium {
+            background: #ffff00;
+            color: #0a0e27;
+        }
+
+        .difficulty-hard {
+            background: #ff0000;
+            color: white;
+        }
+
+        .challenge-title {
+            font-size: 1.5em;
+            color: #00ffff;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .challenge-description {
+            color: #00ff00;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .challenge-points {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #0a0e27;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #00ff00;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #ff0000;
+        }
+
+        .modal h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .terminal-box {
+            background: #000000;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+        }
+
+        .terminal-prompt {
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .terminal-prompt::before {
+            content: "> ";
+            color: #00ff00;
+        }
+
+        .email-viewer {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .email-header {
+            border-bottom: 2px solid #cccccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .email-field {
+            margin: 5px 0;
+            color: #333333;
+        }
+
+        .email-field strong {
+            color: #000000;
+        }
+
+        .suspicious-element {
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .suspicious-element:hover {
+            background: #ffff00;
+            padding: 2px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            background: #000000;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            color: #00ff00;
+            font-size: 1em;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: #00ff00;
+            color: #0a0e27;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .submit-btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .flag-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .flag-input input {
+            flex: 1;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .feedback.success {
+            background: #00ff00;
+            color: #0a0e27;
+            border: 2px solid #00ff00;
+        }
+
+        .feedback.error {
+            background: #ff0000;
+            color: #ffffff;
+            border: 2px solid #ff0000;
+        }
+
+        .code-viewer {
+            background: #000000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .code-line {
+            display: block;
+            padding: 2px 0;
+        }
+
+        .line-number {
+            color: #666666;
+            margin-right: 15px;
+            user-select: none;
+        }
+
+        .malware-sample {
+            background: #1a1a2e;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .clue-box {
+            background: #1a1a2e;
+            border: 2px solid #00ffff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .clue-box h4 {
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .highlight-word {
+            background: #ffff00;
+            color: #000000;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00 0%, #00ffff 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0e27;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-family: 'Courier New', monospace;
+        }
+
+        .option-box {
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-box:hover {
+            background: #16213e;
+            border-color: #00ffff;
+        }
+
+        .option-box.selected {
+            border-color: #00ffff;
+            background: #00ffff20;
+        }
+
+        @media (max-width: 768px) {
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scoreboard {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ SECURITY+ CTF CHALLENGE 🛡️</h1>
+            <p>Chapters 6 & 7: Threats, Vulnerabilities & Attacks</p>
+        </div>
+
+        <div id="registrationSection" class="team-registration">
+            <h2>ENTER TEAM NAME</h2>
+            <input type="text" id="teamNameInput" placeholder="Team Name" onkeypress="if(event.key==='Enter') startCTF()">
+            <br>
+            <button onclick="startCTF()">START MISSION</button>
+        </div>
+
+        <div id="ctfSection" style="display: none;">
+            <div class="scoreboard">
+                <div class="score-item">
+                    <div class="label">TEAM</div>
+                    <div class="value" id="teamName">-</div>
+                </div>
+                <div class="score-item">
+                    <div class="label">SCORE</div>
+                    <div class="value" id="totalScore">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="label">FLAGS</div>
+                    <div class="value"><span id="completedCount">0</span>/10</div>
+                </div>
+                <div class="score-item">
+                    <div class="label">TIME</div>
+                    <div class="value timer" id="timer">00:00</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+            </div>
+
+            <div class="challenges-grid">
+                <div class="challenge-card" onclick="openChallenge(1)">
+                    <div class="challenge-difficulty difficulty-easy">EASY</div>
+                    <div class="challenge-title">📧 Phishing Detective</div>
+                    <div class="challenge-description">
+                        Spot the phishing email! Count how many red flags you find and use that number in your flag.
+                    </div>
+                    <div class="challenge-points">⚡ 100 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(2)">
+                    <div class="challenge-difficulty difficulty-easy">EASY</div>
+                    <div class="challenge-title">🦠 Malware Identifier</div>
+                    <div class="challenge-description">
+                        Read the symptoms and figure out what type of malware infected the system.
+                    </div>
+                    <div class="challenge-points">⚡ 100 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(3)">
+                    <div class="challenge-difficulty difficulty-medium">MEDIUM</div>
+                    <div class="challenge-title">💉 Attack Type Hunter</div>
+                    <div class="challenge-description">
+                        Analyze the attack scenario and identify which type of attack was used.
+                    </div>
+                    <div class="challenge-points">⚡ 150 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(4)">
+                    <div class="challenge-difficulty difficulty-easy">EASY</div>
+                    <div class="challenge-title">🔐 Password Attack Quiz</div>
+                    <div class="challenge-description">
+                        Match the attack description to the correct password attack type.
+                    </div>
+                    <div class="challenge-points">⚡ 100 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(5)">
+                    <div class="challenge-difficulty difficulty-medium">MEDIUM</div>
+                    <div class="challenge-title">⚠️ Vulnerability Prioritization</div>
+                    <div class="challenge-description">
+                        You have 3 vulnerabilities to patch. Figure out which one should be fixed FIRST.
+                    </div>
+                    <div class="challenge-points">⚡ 150 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(6)">
+                    <div class="challenge-difficulty difficulty-medium">MEDIUM</div>
+                    <div class="challenge-title">🎭 Threat Actor Profiler</div>
+                    <div class="challenge-description">
+                        Read the attack details and determine which threat actor type is responsible.
+                    </div>
+                    <div class="challenge-points">⚡ 150 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(7)">
+                    <div class="challenge-difficulty difficulty-easy">EASY</div>
+                    <div class="challenge-title">📞 Social Engineering Spotter</div>
+                    <div class="challenge-description">
+                        Listen to the attack scenario and identify which social engineering tactic is being used.
+                    </div>
+                    <div class="challenge-points">⚡ 100 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(8)">
+                    <div class="challenge-difficulty difficulty-medium">MEDIUM</div>
+                    <div class="challenge-title">🛡️ Defense Strategy Builder</div>
+                    <div class="challenge-description">
+                        Understand why multiple layers of security are essential for protecting systems.
+                    </div>
+                    <div class="challenge-points">⚡ 150 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(9)">
+                    <div class="challenge-difficulty difficulty-easy">EASY</div>
+                    <div class="challenge-title">🚪 Physical Security Breach</div>
+                    <div class="challenge-description">
+                        Identify the physical security violation that allowed unauthorized access.
+                    </div>
+                    <div class="challenge-points">⚡ 100 POINTS</div>
+                </div>
+
+                <div class="challenge-card" onclick="openChallenge(10)">
+                    <div class="challenge-difficulty difficulty-medium">MEDIUM</div>
+                    <div class="challenge-title">🌐 Network Attack Analyzer</div>
+                    <div class="challenge-description">
+                        Analyze network traffic patterns to determine what type of attack is occurring.
+                    </div>
+                    <div class="challenge-points">⚡ 150 POINTS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Modals -->
+    <div id="modal" class="modal">
+        <div class="modal-content" id="modalContent">
+            <!-- Content dynamically loaded -->
+        </div>
+    </div>
+
+    <script>
+        let teamName = '';
+        let totalScore = 0;
+        let completedChallenges = [];
+        let startTime = null;
+        let timerInterval = null;
+
+        const flags = {
+            1: 'PHISHING5',
+            2: 'RANSOMWARE',
+            3: 'SQLINJECTION',
+            4: 'CREDENTIALSTUFFING',
+            5: 'CRITICAL',
+            6: 'NATIONSTATE',
+            7: 'VISHING',
+            8: 'DEFENSEINDEPTH',
+            9: 'TAILGATING',
+            10: 'DDOS'
+        };
+
+        function startCTF() {
+            const input = document.getElementById('teamNameInput').value.trim();
+            if (!input) {
+                alert('ERROR: Team name required!');
+                return;
+            }
+            teamName = input;
+            document.getElementById('teamName').textContent = teamName;
+            document.getElementById('registrationSection').style.display = 'none';
+            document.getElementById('ctfSection').style.display = 'block';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function openChallenge(id) {
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modalContent');
+            
+            // Reset foundIndicators for phishing challenge
+            if (id === 1) {
+                foundIndicators = new Set();
+            }
+            
+            let html = `<span class="close-modal" onclick="closeModal()">&times;</span>`;
+
+            switch(id) {
+                case 1:
+                    html += getPhishingChallenge();
+                    break;
+                case 2:
+                    html += getMalwareChallenge();
+                    break;
+                case 3:
+                    html += getAttackTypeChallenge();
+                    break;
+                case 4:
+                    html += getPasswordChallenge();
+                    break;
+                case 5:
+                    html += getVulnChallenge();
+                    break;
+                case 6:
+                    html += getThreatActorChallenge();
+                    break;
+                case 7:
+                    html += getSocialEngineeringChallenge();
+                    break;
+                case 8:
+                    html += getDefenseInDepthChallenge();
+                    break;
+                case 9:
+                    html += getPhysicalSecurityChallenge();
+                    break;
+                case 10:
+                    html += getNetworkAttackChallenge();
+                    break;
+            }
+
+            html += `
+                <div class="flag-input">
+                    <input type="text" id="flagInput${id}" placeholder="Enter your answer (no spaces)" onkeypress="if(event.key==='Enter') submitFlag(${id})">
+                    <button class="submit-btn" onclick="submitFlag(${id})">SUBMIT</button>
+                </div>
+                <div id="feedback${id}"></div>
+            `;
+
+            content.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function getPhishingChallenge() {
+            return `
+                <h2>📧 PHISHING DETECTIVE</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Find ALL the phishing red flags in this email</div>
+                    <div class="terminal-prompt">Count how many you find, then submit your answer as: PHISHING[NUMBER]</div>
+                    <div class="terminal-prompt">Example: If you find 3 red flags, submit: PHISHING3</div>
+                </div>
+
+                <div class="email-viewer">
+                    <div class="email-header">
+                        <div class="email-field"><strong>From:</strong> <span class="suspicious-element" onclick="highlightIndicator(1, this, 'Suspicious sender domain')">security@paypa1-secure.com</span></div>
+                        <div class="email-field"><strong>To:</strong> you@company.com</div>
+                        <div class="email-field"><strong>Subject:</strong> <span class="suspicious-element" onclick="highlightIndicator(2, this, 'Creates urgency with deadline')">URGENT: Verify Within 24 Hours!</span></div>
+                    </div>
+                    <div class="email-body">
+                        <p><span class="suspicious-element" onclick="highlightIndicator(3, this, 'Generic greeting - no personalization')">Dear Customer</span>,</p>
+                        <p>Your account has been <span class="suspicious-element" onclick="highlightIndicator(4, this, 'Vague security threat')">compromised</span>. Click here immediately: <span class="suspicious-element" onclick="highlightIndicator(5, this, 'Fake/suspicious URL')">http://paypal-verify.com/secure</span></p>
+                        <p>Account will be <strong>LOCKED</strong> if you don't respond!</p>
+                        <p>PayPal Security</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 YOUR FINDINGS:</h4>
+                    <div id="indicatorsList" style="color: #00ff00; margin-top: 10px;"></div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">If you found 3 red flags, enter: PHISHING3</div>
+                    <div style="color: #00ffff;">If you found 7 red flags, enter: PHISHING7</div>
+                </div>
+            `;
+        }
+
+        let foundIndicators = new Set();
+        function highlightIndicator(num, element, description) {
+            if (!foundIndicators.has(num)) {
+                foundIndicators.add(num);
+                element.style.background = '#00ff00';
+                element.style.color = '#000000';
+                element.style.padding = '2px 5px';
+                element.style.borderRadius = '3px';
+                
+                const list = document.getElementById('indicatorsList');
+                list.innerHTML += `<div>✓ ${description}</div>`;
+            }
+        }
+
+        function getMalwareChallenge() {
+            return `
+                <h2>🦠 MALWARE IDENTIFIER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Read the symptoms and identify the malware type</div>
+                    <div class="terminal-prompt">Submit the malware name (one word, no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">⚠️ INCIDENT REPORT</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p>• User reports all files have been <span class="highlight-word">encrypted</span></p>
+                        <p>• File extensions changed to <span class="highlight-word">.locked</span></p>
+                        <p>• Desktop shows message demanding <span class="highlight-word">$5,000 in Bitcoin</span> for decryption key</p>
+                        <p>• Message says "Your files are encrypted. Pay within 48 hours or lose access forever"</p>
+                        <p>• Network shares also affected</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 KEY CLUES:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • Files are <strong>encrypted</strong> and inaccessible<br>
+                        • Demands <strong>payment</strong> (ransom) for decryption<br>
+                        • Wants payment in cryptocurrency (Bitcoin)<br>
+                        • Time pressure (48 hour deadline)<br>
+                    </div>
+                </div>
+
+                <div class="terminal-box">
+                    <div style="color: #00ffff;">What type of malware is this?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as one word: VIRUS or WORM or TROJAN or SPYWARE (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getAttackTypeChallenge() {
+            return `
+                <h2>💉 ATTACK TYPE HUNTER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Identify the type of attack based on the scenario</div>
+                    <div class="terminal-prompt">Submit the attack name (no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">📋 SECURITY INCIDENT</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>What Happened:</strong></p>
+                        <p>An attacker discovered a vulnerable web form on your company website. They entered this into the username field:</p>
+                        <div style="background: #000; padding: 15px; margin: 15px 0; border: 2px solid #ff0000; border-radius: 5px;">
+                            <code style="color: #ff0000;">admin' OR '1'='1'--</code>
+                        </div>
+                        <p>This input tricked the <span class="highlight-word">database</span> into thinking the login was valid, even without a correct password!</p>
+                        <p>The attacker gained access to the admin panel and viewed all customer data.</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 ANALYSIS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • Attack targeted a web application<br>
+                        • Used special characters and <strong>SQL</strong> code<br>
+                        • <strong>Injected</strong> malicious code into a form field<br>
+                        • Manipulated database queries<br>
+                        • Bypassed authentication<br>
+                    </div>
+                </div>
+
+                <div class="terminal-box">
+                    <div style="color: #00ffff;">This is called SQL ________ (one word, combines with SQL)</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as one word with no spaces: SQLINJECTION or SQLPOISON (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getPasswordChallenge() {
+            return `
+                <h2>🔐 PASSWORD ATTACK QUIZ</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Match the scenario to the correct password attack type</div>
+                    <div class="terminal-prompt">Submit the attack name (no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">📋 ATTACK SCENARIO</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>What the Attacker Did:</strong></p>
+                        <p>1. Attacker obtained a list of 100 million username/password pairs from a previous data breach</p>
+                        <p>2. Attacker knows people reuse passwords across multiple websites</p>
+                        <p>3. Attacker tests these stolen <span class="highlight-word">credentials</span> on YOUR website</p>
+                        <p>4. Successfully logs into 5,000 accounts because users had the same password on both sites</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 KEY FACTS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • Using <strong>stolen</strong> username/password combinations<br>
+                        • Testing those <strong>credentials</strong> on your login form<br>
+                        • Takes advantage of password reuse<br>
+                        • Not guessing - using real stolen data<br>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What type of password attack is this? (2 words, no spaces)</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as two words combined with no spaces: BRUTEFORCE or DICTIONARYATTACK (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getVulnChallenge() {
+            return `
+                <h2>⚠️ VULNERABILITY PRIORITIZATION</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: You must patch vulnerabilities but only have time for ONE today</div>
+                    <div class="terminal-prompt">Which should you fix FIRST? Submit: CRITICAL, HIGH, or MEDIUM</div>
+                </div>
+
+                <div class="code-viewer">
+                    <h3 style="color: #00ffff; margin-bottom: 15px;">VULNERABILITY SCAN RESULTS:</h3>
+                    
+                    <div style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-left: 5px solid #ff0000;">
+                        <div style="color: #ff0000; font-size: 1.2em; margin-bottom: 10px;">🔴 VULNERABILITY #1 - <span class="highlight-word">CVSS 9.8</span></div>
+                        <div style="color: #00ff00;">
+                            <strong>Apache Web Server - Remote Code Execution</strong><br>
+                            • Severity: <span style="color: #ff0000; font-weight: bold;">CRITICAL</span><br>
+                            • Attacker can execute code with root privileges<br>
+                            • Public exploit code available online<br>
+                            • <span style="color: #ff0000; font-weight: bold;">ACTIVELY BEING EXPLOITED IN THE WILD</span><br>
+                            • Affects internet-facing web server
+                        </div>
+                    </div>
+
+                    <div style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-left: 5px solid #ff9800;">
+                        <div style="color: #ff9800; font-size: 1.2em; margin-bottom: 10px;">🟠 VULNERABILITY #2 - CVSS 7.5</div>
+                        <div style="color: #00ff00;">
+                            <strong>WordPress Plugin - SQL Injection</strong><br>
+                            • Severity: HIGH<br>
+                            • Requires authentication to exploit<br>
+                            • Affects internal blog site<br>
+                            • No public exploits yet<br>
+                            • Patch available for 2 months
+                        </div>
+                    </div>
+
+                    <div style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-left: 5px solid #ffeb3b;">
+                        <div style="color: #ffeb3b; font-size: 1.2em; margin-bottom: 10px;">🟡 VULNERABILITY #3 - CVSS 4.3</div>
+                        <div style="color: #00ff00;">
+                            <strong>Old CRM System - Information Disclosure</strong><br>
+                            • Severity: MEDIUM<br>
+                            • Only accessible from internal network<br>
+                            • Requires valid login credentials<br>
+                            • Legacy system used by 3 people<br>
+                            • Low risk
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 WHICH TO PATCH FIRST?</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        Think about:<br>
+                        • Which has the highest severity? (CVSS score)<br>
+                        • Which is being actively exploited right now?<br>
+                        • Which is on an internet-facing system?<br>
+                        • Which could cause the most damage?<br>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter the severity level: CRITICAL or HIGH or MEDIUM</div>
+                </div>
+            `;
+        }
+
+        function getThreatActorChallenge() {
+            return `
+                <h2>🎭 THREAT ACTOR PROFILER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Identify which type of threat actor is behind this attack</div>
+                    <div class="terminal-prompt">Submit: NATIONSTATE, CRIME, HACKTIVIST, or INSIDER</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">📋 THREAT INTELLIGENCE REPORT</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>TARGET:</strong> Defense contractor developing missile systems</p>
+                        <p><strong>ATTACK DURATION:</strong> <span class="highlight-word">3 years</span> - very patient, long-term campaign</p>
+                        <p><strong>SOPHISTICATION:</strong> <span class="highlight-word">Custom malware with zero-day exploits</span></p>
+                        <p><strong>RESOURCES:</strong> <span class="highlight-word">Unlimited funding</span>, team of expert hackers</p>
+                        <p><strong>GOAL:</strong> <span class="highlight-word">Steal classified military designs</span> (not money!)</p>
+                        <p><strong>INDICATORS:</strong> Attack aligns with foreign government's strategic interests</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 ANALYZE THE CLUES:</h4>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <strong>Think about what type of threat actor has:</strong><br>
+                        • Unlimited government funding<br>
+                        • Teams of expert hackers<br>
+                        • 3+ years of patience (not after quick money)<br>
+                        • Goals of espionage and stealing military secrets<br>
+                        • Aligns with foreign government interests<br>
+                    </div>
+                    <div style="color: #00ffff; margin-top: 15px;">
+                        Is this organized crime (wants money), a hacktivist (wants publicity), an insider (already has access), or something else?
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What type of threat actor is this?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as one or two words combined: NATIONSTATE or CRIME or HACKTIVIST or INSIDER</div>
+                </div>
+            `;
+        }
+
+        function getSocialEngineeringChallenge() {
+            return `
+                <h2>📞 SOCIAL ENGINEERING SPOTTER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Identify the social engineering tactic being used</div>
+                    <div class="terminal-prompt">Submit the attack type (one word, no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">📋 INCIDENT REPORT</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>What Happened:</strong></p>
+                        <p>An employee receives a phone call from someone claiming to be from IT support:</p>
+                        <div style="background: #000; padding: 15px; margin: 15px 0; border: 2px solid #ff0000; border-radius: 5px;">
+                            <div style="color: #00ffff; margin-bottom: 10px;">📞 "Hello, this is IT support calling..."</div>
+                            <div style="color: #ff0000;">"We've detected suspicious activity on your account."</div>
+                            <div style="color: #ff0000;">"I need to verify your identity to secure your account."</div>
+                            <div style="color: #ff0000;">"Can you please provide your username and password?"</div>
+                        </div>
+                        <p>The employee gives their credentials over the phone to the "IT support" person.</p>
+                        <p>Later, the attacker uses those credentials to access the employee's account.</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 KEY INDICATORS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • Attack was conducted over the <span class="highlight-word">phone</span> (voice call)<br>
+                        • Attacker impersonated IT support<br>
+                        • Created false urgency about account security<br>
+                        • Tricked victim into revealing credentials<br>
+                        • This is the <strong>voice</strong> version of phishing<br>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What is this voice-based phishing attack called?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as one word: PHISHING or SMISHING or VISHING or PRETEXTING (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getDefenseInDepthChallenge() {
+            return `
+                <h2>🛡️ DEFENSE STRATEGY BUILDER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Understand the key security principle behind layered defenses</div>
+                    <div class="terminal-prompt">Submit the security strategy name (3 words, no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #00ff00;">📋 SECURITY SCENARIO</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>Your Company's Security Layers:</strong></p>
+                        <p>🔥 <strong>Layer 1:</strong> Firewall at network perimeter</p>
+                        <p>📧 <strong>Layer 2:</strong> Email security gateway with anti-phishing</p>
+                        <p>💻 <strong>Layer 3:</strong> Endpoint protection (EDR) on all workstations</p>
+                        <p>🔐 <strong>Layer 4:</strong> Multi-factor authentication required</p>
+                        <p>👤 <strong>Layer 5:</strong> Security awareness training for users</p>
+                        <p>📊 <strong>Layer 6:</strong> SIEM monitoring all activity</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 WHY THIS WORKS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px; line-height: 1.8;">
+                        <p><strong>Attacker Scenario:</strong></p>
+                        <p>1️⃣ Attacker bypasses firewall using encrypted traffic ✓</p>
+                        <p>2️⃣ Phishing email gets through email gateway ✓</p>
+                        <p>3️⃣ User clicks malicious link ✓</p>
+                        <p>4️⃣ <span class="highlight-word">BUT</span> - EDR detects malware behavior and blocks it ✗</p>
+                        <p>5️⃣ <span class="highlight-word">AND</span> - SIEM alerts security team immediately ✗</p>
+                        <br>
+                        <p style="color: #00ffff;"><strong>Even though 3 layers failed, the remaining layers stopped the attack!</strong></p>
+                        <p>This is why we use <strong>multiple overlapping layers of security</strong>.</p>
+                        <p>No single control is perfect, but <span class="highlight-word">depth</span> provides protection.</p>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What do we call this strategy of using multiple security layers?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as multiple words combined with no spaces: ZEROTRUST or LEASTPRIVILEGE (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getPhysicalSecurityChallenge() {
+            return `
+                <h2>🚪 PHYSICAL SECURITY BREACH</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Identify the physical security violation</div>
+                    <div class="terminal-prompt">Submit the attack name (one word, no spaces)</div>
+                </div>
+
+                <div class="malware-sample">
+                    <h3 style="color: #ff0000;">📋 SECURITY CAMERA FOOTAGE</h3>
+                    <div style="color: #00ff00; margin-top: 15px; line-height: 1.8;">
+                        <p><strong>What the Camera Shows:</strong></p>
+                        <p>🎥 <strong>8:47 AM:</strong> Authorized employee badges in through secure door</p>
+                        <p>🎥 <strong>8:47 AM:</strong> Unknown person in casual clothes walks closely behind employee</p>
+                        <p>🎥 <strong>8:47 AM:</strong> Unknown person <span class="highlight-word">enters through the same door</span> before it closes</p>
+                        <p>🎥 <strong>8:48 AM:</strong> Unknown person is now inside secure area without using their own badge</p>
+                        <br>
+                        <p style="color: #ff0000;"><strong>Security Violation Detected!</strong></p>
+                        <p>The unauthorized person gained physical access by following an authorized employee through a secure entry point.</p>
+                        <p>They literally rode the employee's <span class="highlight-word">"tail"</span> through the door.</p>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 ATTACK CHARACTERISTICS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • No badge used by attacker<br>
+                        • <strong>Followed closely</strong> behind authorized person<br>
+                        • Entered before door could close<br>
+                        • Following someone like a <span class="highlight-word">"tail"</span><br>
+                        • Also called <strong>piggybacking</strong><br>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What is this physical access attack called?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as one word: TAILGATING or PIGGYBACKING or MANTRAP (etc.)</div>
+                </div>
+            `;
+        }
+
+        function getNetworkAttackChallenge() {
+            return `
+                <h2>🌐 NETWORK ATTACK ANALYZER</h2>
+                <div class="terminal-box">
+                    <div class="terminal-prompt">Mission: Identify the network attack type from traffic patterns</div>
+                    <div class="terminal-prompt">Submit the attack name (one word, no spaces)</div>
+                </div>
+
+                <div class="code-viewer">
+                    <h3 style="color: #00ffff; margin-bottom: 15px;">NETWORK MONITORING DASHBOARD:</h3>
+                    
+                    <div style="background: #1a1a2e; padding: 15px; margin: 15px 0; border-left: 5px solid #ff0000;">
+                        <div style="color: #ff0000; font-size: 1.2em; margin-bottom: 10px;">🚨 ALERT: ABNORMAL TRAFFIC DETECTED</div>
+                        <div style="color: #00ff00; line-height: 1.8;">
+                            <p><strong>Target:</strong> Your company web server (store.company.com)</p>
+                            <p><strong>Normal Traffic:</strong> 1,000 requests per minute</p>
+                            <p><strong>Current Traffic:</strong> <span class="highlight-word">500,000 requests per minute</span></p>
+                            <br>
+                            <p><strong>Traffic Sources:</strong></p>
+                            <p>• <span class="highlight-word">10,000+ different IP addresses worldwide</span></p>
+                            <p>• China: 2,500 IPs</p>
+                            <p>• Russia: 2,000 IPs</p>
+                            <p>• Brazil: 1,800 IPs</p>
+                            <p>• India: 1,500 IPs</p>
+                            <p>• United States: 1,200 IPs</p>
+                            <p>• + 1,000 IPs from other countries</p>
+                            <br>
+                            <p><strong>Traffic Pattern:</strong> All sending HTTP GET requests simultaneously</p>
+                            <p><strong>Web Server Status:</strong> <span style="color: #ff0000; font-weight: bold;">OVERLOADED - Cannot respond to legitimate customers</span></p>
+                            <p><strong>Customer Impact:</strong> Website completely unavailable</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clue-box">
+                    <h4>🔍 ATTACK ANALYSIS:</h4>
+                    <div style="color: #00ff00; margin-top: 10px;">
+                        • Goal: Make service unavailable (<strong>Denial of Service</strong>)<br>
+                        • Method: Overwhelming flood of requests<br>
+                        • Sources: <span class="highlight-word">Distributed across 10,000+ IP addresses</span><br>
+                        • Likely: Botnet of compromised computers<br>
+                        • Impact: Legitimate users cannot access website<br>
+                        <br>
+                        <p style="color: #00ffff;">This is a Denial of Service attack from a <strong>DISTRIBUTED</strong> network of attackers!</p>
+                    </div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px;">
+                    <div style="color: #00ffff;">What type of attack uses thousands of distributed sources to deny service?</div>
+                </div>
+
+                <div class="terminal-box" style="margin-top: 20px; background: #1a1a2e;">
+                    <div style="color: #ffff00; margin-bottom: 10px;">📝 FORMAT EXAMPLE:</div>
+                    <div style="color: #00ffff;">Enter as abbreviation or full name: DOS or DDOS or MITM (etc.)</div>
+                </div>
+            `;
+        }
+
+        function submitFlag(challengeId) {
+            const input = document.getElementById('flagInput' + challengeId).value.trim().toUpperCase().replace(/\s+/g, '');
+            const feedback = document.getElementById('feedback' + challengeId);
+            
+            if (input === flags[challengeId]) {
+                // Easy challenges (1,2,4,7,9) = 100 points, Medium challenges (3,5,6,8,10) = 150 points
+                const points = (challengeId === 3 || challengeId === 5 || challengeId === 6 || challengeId === 8 || challengeId === 10) ? 150 : 100;
+                feedback.innerHTML = `
+                    <div class="feedback success">
+                        <h3>🎉 CORRECT! +${points} POINTS</h3>
+                        <p>Flag: ${flags[challengeId]}</p>
+                        <p>Challenge completed!</p>
+                    </div>
+                `;
+                completeChallenge(challengeId, points);
+                setTimeout(() => closeModal(), 2000);
+            } else {
+                feedback.innerHTML = `
+                    <div class="feedback error">
+                        <h3>✗ INCORRECT</h3>
+                        <p>Not quite right. Review the clues and try again!</p>
+                        <p>Make sure there are no spaces in your answer.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function completeChallenge(id, points) {
+            if (completedChallenges.includes(id)) return;
+            
+            completedChallenges.push(id);
+            totalScore += points;
+            
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('completedCount').textContent = completedChallenges.length;
+            
+            const progress = (completedChallenges.length / 10) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+            
+            const cards = document.querySelectorAll('.challenge-card');
+            cards[id - 1].classList.add('completed');
+
+            if (completedChallenges.length === 10) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    alert(`🎉 MISSION COMPLETE!\n\nTeam: ${teamName}\nScore: ${totalScore} points\nTime: ${document.getElementById('timer').textContent}\n\nAll challenges solved!`);
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
